@@ -19,7 +19,7 @@ export default async (request, context) => {
 
     const title = esc(p.title + ' | वाक्-ऋचा');
     const desc = esc(p.author_name + ' — ' + p.body.replace(/\s+/g, ' ').slice(0, 150));
-    const img = p.image_url ? esc(p.image_url) : '';
+       const img = esc(p.image_url || (url.origin + '/og-default.jpg'));
     const tags = `<title>${title}</title>
 <meta name="description" content="${desc}"/>
 <meta property="og:type" content="article"/>
