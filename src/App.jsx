@@ -52,7 +52,7 @@ function Post({user,ed}){const{slug}=useParams();const[p,setP]=useState(),[cm,se
  const[c,l,r]=await Promise.all([sb.from('comments').select('*').eq('post_id',data.id).order('created_at'),sb.from('likes').select('user_id').eq('post_id',data.id),sb.from('posts').select('slug,title').eq('category',data.category).eq('published',true).neq('id',data.id).limit(4)]);
  setCm(c.data||[]);setLk({n:(l.data||[]).length,me:!!user&&(l.data||[]).some(x=>x.user_id===user.id)});setRel(r.data||[])},[slug,user]);useEffect(()=>{load()},[load]);
  if(!p)return<main><p className="note">रचना नहीं मिली।</p></main>;
- const url=location.href,txt=p.title+' — '+p.author_name,own=user&&(user.id===p.author_id||ed);
+ const url=location.href,txt=p.title+' — '+p.author_name+'\n\nपूरी पत्रिका पढ़ें: '+location.origin,own=user&&(user.id===p.author_id||ed);
  const like=async()=>{if(!user)return alert('पसंद करने के लिए प्रवेश करें।');lk.me?await sb.from('likes').delete().match({post_id:p.id,user_id:user.id}):await sb.from('likes').insert({post_id:p.id,user_id:user.id});load()};
  const comment=async()=>{if(hp)return;if(!nm.trim()||!tx.trim())return;const{error}=await sb.from('comments').insert({post_id:p.id,name:nm,body:tx});if(!error){setTx('');load()}};
  const share=async()=>{if(navigator.share)navigator.share({title:p.title,text:txt,url});else{await navigator.clipboard.writeText(url);setCo(true)}};
