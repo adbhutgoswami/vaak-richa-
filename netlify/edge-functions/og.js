@@ -18,7 +18,7 @@ export default async (request, context) => {
     if (!p) return res;
 
     const title = esc(p.title + ' | वाक्-ऋचा');
-    const desc = esc(p.author_name + ' — ' + p.body.replace(/\s+/g, ' ').slice(0, 150));
+       const desc = esc(p.author_name + ' — ' + p.body.replace(/\s+/g, ' ').slice(0, 110) + ' … पूरी पत्रिका पढ़ें: ' + url.host);
        const img = esc(p.image_url || (url.origin + '/og-default.jpg'));
     const tags = `<title>${title}</title>
 <meta name="description" content="${desc}"/>
