@@ -14,8 +14,8 @@ function Head({title,desc,img}){useEffect(()=>{document.title=title+' | वा�
 function Auth({onDone}){const[email,setE]=useState(''),[pw,setP]=useState(''),[msg,setM]=useState('');
  const go=async up=>{const r=up?await sb.auth.signUp({email,password:pw}):await sb.auth.signInWithPassword({email,password:pw});setM(r.error?r.error.message:up?'खाता बन गया। यदि ईमेल पुष्टि माँगे तो पुष्टि करके प्रवेश करें।':'');if(!r.error&&!up)onDone?.()};
  return<div className="box"><h2>प्रवेश करें</h2><input placeholder="ईमेल" value={email} onChange={e=>setE(e.target.value)}/><input type="password" placeholder="पासवर्ड (कम से कम 6 अक्षर)" value={pw} onChange={e=>setP(e.target.value)}/>
- <div className="row"><button onClick={()=>go(false)}>प्रवेश करें</button><button className="alt" onClick={()=>go(true)}>नया खाता बनाएँ</button></div><p className="note">{msg}</p></div>}
-function Layout({user,ed,children}){return<><header className="top"><nav><Link to="/">मुख्य पृष्ठ</Link>{user&&<Link to="/meri">मेरी रचनाएँ</Link>}{ed&&<Link to="/admin">संपादक पैनल</Link>}</nav>
+ <div className="row"><button onClick={()=>go(false)}>प्रवेश करें</button><button className="alt" onClick={()=>go(true)}>  नया खाता बनाएँ</button><button className="alt" onClick={reset}>पासवर्ड भूल गए?</button></div><p className="note">{msg}</p></div>}
+function Layout({user,ed,children}){return<><header className="top"><nav><Link to="/">मुख्य पृष्ठ</Link>{user&&<Link to="/meri">मेरी रचनाएँ</Link>}{user&&<Link to="/naya-password">पासवर्ड बदलें</Link>}{ed&&<Link to="/admin">संपादक पैनल</Link>}</nav>
  <div className="auth">{user?<button className="alt" onClick={()=>sb.auth.signOut()}>बाहर निकलें</button>:<Link to="/login">प्रवेश करें</Link>}</div></header>
  <div className="hero"><Link to="/"><h1 className="logo">वाक्-ऋचा</h1></Link><p className="t1">डिजिटल साहित्यिक पत्रिका</p><p className="t2">शब्दों की यात्रा, विचारों का संगम</p></div>{children}<footer>© वाक्-ऋचा</footer></>}
 function Home(){const[f,setF]=useState([]);useEffect(()=>{sb.from('posts').select('*').eq('featured',true).eq('published',true).order('created_at',{ascending:false}).limit(1).then(({data})=>setF(data||[]))},[]);
