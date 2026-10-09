@@ -75,7 +75,10 @@ function Mine({user,admin}){const[l,setL]=useState([]);const load=useCallback(as
  <div className="row"><Link className="btn" to={'/sampadit/'+p.slug}>संपादित करें</Link>
  {admin&&<><button className="alt" onClick={()=>tog(p,'published')}>{p.published?'अप्रकाशित करें':'फिर प्रकाशित करें'}</button>{p.category==='संपादकीय'&&<button className="alt" onClick={()=>tog(p,'featured')}>{p.featured?'मुख्य पृष्ठ से हटाएँ':'मुख्य पृष्ठ पर दिखाएँ'}</button>}
  <button className="danger" onClick={async()=>{if(confirm('क्या आप सच में इस रचना को हमेशा के लिए हटाना चाहते हैं?')){await sb.from('posts').delete().eq('id',p.id);load()}}}>हटाएँ</button></>}</div></div>)}</main>}
+function PwChange(){const[p,setP]=useState(''),[m,setM]=useState('');
+ const go=async()=>{if(p.length<6)return setM('पासवर्ड कम से कम 6 अक्षर का रखें।');const{error}=await sb.auth.updateUser({password:p});setM(error?error.message:'पासवर्ड बदल गया है।');if(!error)setP('')};
+ return<main className="box"><h2>पासवर्ड बदलें</h2><input type="password" placeholder="नया पासवर्ड" value={p} onChange={e=>setP(e.target.value)}/><button onClick={go}>पासवर्ड सुरक्षित करें</button><p className="note">{m}</p></main>}
 export default function App(){const[user,ed]=useUser();
  return<Layout user={user} ed={ed}><Routes><Route path="/" element={<Home/>}/><Route path="/shreni/:name" element={<Category/>}/><Route path="/post/:slug" element={<Post user={user} ed={ed}/>}/>
  <Route path="/likhein" element={<Editor user={user} ed={ed}/>}/><Route path="/sampadit/:slug" element={<EditPost user={user} ed={ed}/>}/><Route path="/meri" element={<Mine user={user}/>}/>
- <Route path="/admin" element={ed?<Mine user={user} admin/>:<main><p className="note">यह पृष्ठ केवल संपादक के लिए है।</p></main>}/><Route path="/login" element={<main><Auth/></main>}/></Routes></Layout>}
+ <Route path="/admin" element={ed?<Mine user={user} admin/>:<main><p className="note">यह पृष्ठ केवल संपादक के लिए है।</p></main>}/><Route path="/naya-password" element={<PwChange/>}/><Route path="/login" element={<main><Auth/></main>}/></Routes></Layout>}
