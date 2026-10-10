@@ -16,7 +16,7 @@ function Auth({onDone}){const[email,setE]=useState(''),[pw,setP]=useState(''),[m
  const reset=async()=>{if(!email)return setM('पहले ऊपर अपना ईमेल लिखें।');const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/naya-password'});setM(error?error.message:'पासवर्ड बदलने का लिंक आपके ईमेल पर भेज दिया गया है।')};
  return<div className="box"><h2>प्रवेश करें</h2><input placeholder="ईमेल" value={email} onChange={e=>setE(e.target.value)}/><input type="password" placeholder="पासवर्ड (कम से कम 6 अक्षर)" value={pw} onChange={e=>setP(e.target.value)}/>
  <div className="row"><button onClick={()=>go(false)}>प्रवेश करें</button><button className="alt" onClick={()=>go(true)}>नया खाता बनाएँ</button><button className="alt" onClick={reset}>पासवर्ड भूल गए?</button></div><p className="note">{msg}</p></div>}
-function Layout({user,ed,children}){return<><header className="top"><nav><Link to="/">मुख्य पृष्ठ</Link>{user&&<Link to="/meri">मेरी रचनाएँ</Link>}{user&&<Link to="/naya-password">पासवर्ड बदलें</Link>}{ed&&<Link to="/admin">संपादक पैनल</Link>}</nav>
+function Layout({user,ed,children}){return<><header className="top"><nav><Link to="/">मुख्य पृष्ठ</Link>{user&&<Link to="/meri">मेरी रचनाएँ</Link>}{user&&<Link to="/naya-password">पासवर्ड बदलें</Link>}{ed&&<Link to="/admin">संपादक पैनल</Link>}{ed&&<Link to="/sadasya">सभी सदस्य</Link>}</nav>
    <div className="auth">{user?<><span className="who" title={user.email}>{user.email}</span><button className="alt" onClick={()=>sb.auth.signOut()}>बाहर निकलें</button></>:<Link to="/login">प्रवेश करें</Link>}</div></header>
  <div className="hero"><Link to="/"><h1 className="logo">वाक्-ऋचा</h1></Link><p className="t1">डिजिटल साहित्यिक पत्रिका</p><p className="t2">शब्दों की यात्रा, विचारों का संगम</p></div>{children}<footer>© वाक्-ऋचा</footer></>}
 function Home(){const[f,setF]=useState([]),[cnt,setCnt]=useState({});
@@ -81,7 +81,10 @@ function Mine({user,admin}){const[l,setL]=useState([]);const load=useCallback(as
 function PwChange(){const[p,setP]=useState(''),[m,setM]=useState('');
  const go=async()=>{if(p.length<6)return setM('पासवर्ड कम से कम 6 अक्षर का रखें।');const{error}=await sb.auth.updateUser({password:p});setM(error?error.message:'पासवर्ड बदल गया है।');if(!error)setP('')};
  return<main className="box"><h2>पासवर्ड बदलें</h2><input type="password" placeholder="नया पासवर्ड" value={p} onChange={e=>setP(e.target.value)}/><button onClick={go}>पासवर्ड सुरक्षित करें</button><p className="note">{m}</p></main>}
+function Members(){const[l,setL]=useState([]),[m,setM]=useState('');
+ useEffect(()=>{sb.rpc('member_list').then(({data,error})=>{if(error)setM(error.message);else setL(data||[])})},[]);
+ return<main><h2>सभी सदस्य ({l.length})</h2><p className="note">{m}</p>{l.map(x=><div key={x.m_email} className="item"><b>{x.m_email}</b><br/><small>{x.m_name} · जुड़े: {fmt(x.m_joined)}{x.m_editor?' · संपादक':''}</small></div>)}</main>}
 export default function App(){const[user,ed]=useUser();
  return<Layout user={user} ed={ed}><Routes><Route path="/" element={<Home/>}/><Route path="/shreni/:name" element={<Category/>}/><Route path="/post/:slug" element={<Post user={user} ed={ed}/>}/>
  <Route path="/likhein" element={<Editor user={user} ed={ed}/>}/><Route path="/sampadit/:slug" element={<EditPost user={user} ed={ed}/>}/><Route path="/meri" element={<Mine user={user}/>}/>
- <Route path="/admin" element={ed?<Mine user={user} admin/>:<main><p className="note">यह पृष्ठ केवल संपादक के लिए है।</p></main>}/><Route path="/naya-password" element={<PwChange/>}/><Route path="/login" element={<main><Auth/></main>}/></Routes></Layout>}
+ <Route path="/admin" element={ed?<Mine user={user} admin/>:<main><p className="note">यह पृष्ठ केवल संपादक के लिए है।</p></main>}/><Route path="/naya-password" element={<PwChange/>}/><Route path="/sadasya" element={ed?<Members/>:<main><p className="note">यह पृष्ठ केवल संपादक के लिए है।</p></main>}/><Route path="/login" element={<main><Auth/></main>}/></Routes></Layout>}
