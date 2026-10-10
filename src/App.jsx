@@ -19,10 +19,10 @@ function Auth({onDone}){const[email,setE]=useState(''),[pw,setP]=useState(''),[m
 function Layout({user,ed,children}){return<><header className="top"><nav><Link to="/">मुख्य पृष्ठ</Link>{user&&<Link to="/meri">मेरी रचनाएँ</Link>}{user&&<Link to="/naya-password">पासवर्ड बदलें</Link>}{ed&&<Link to="/admin">संपादक पैनल</Link>}</nav>
  <div className="auth">{user?<button className="alt" onClick={()=>sb.auth.signOut()}>बाहर निकलें</button>:<Link to="/login">प्रवेश करें</Link>}</div></header>
  <div className="hero"><Link to="/"><h1 className="logo">वाक्-ऋचा</h1></Link><p className="t1">डिजिटल साहित्यिक पत्रिका</p><p className="t2">शब्दों की यात्रा, विचारों का संगम</p></div>{children}<footer>© वाक्-ऋचा</footer></>}
-function Home(){const[f,setF]=useState([]);useEffect(()=>{sb.from('posts').select('*').eq('featured',true).eq('published',true).order('created_at',{ascending:false}).limit(1).then(({data})=>setF(data||[]))},[]);
+function Home(){const[f,setF]=useState([]);   function Home(){const[f,setF]=useState([]);const[cnt,setCnt]=useState({});useEffect(()=>{sb.from('posts').select('category').eq('published',true).then(({data})=>{const o={};(data||[]).forEach(r=>{o[r.category]=(o[r.category]||0)+1});setCnt(o)})},[]);useEffect(()=>{sb.from('posts').select('*').eq('featured',true).eq('published',true).order('created_at',{ascending:false}).limit(1).then(({data})=>setF(data||[]))},[]);
  return<main><Head title="मुख्य पृष्ठ" desc="शब्दों की यात्रा, विचारों का संगम"/>
  {f[0]&&<Link to={'/post/'+f[0].slug} className="feat"><span>संपादकीय</span><h2>{f[0].title}</h2><p>{f[0].body.slice(0,160)}…</p></Link>}
- <div className="grid">{CATS.map(([n,c,i])=><Link key={n} to={'/shreni/'+encodeURIComponent(n)} className="card" style={{background:c}}><b>{n}</b><i>{i}</i></Link>)}</div>
+ <div className="grid">{CATS.map(([n,c,i])=><Link key={n} to={'/shreni/'+encodeURIComponent(n)} className="card" style={{background:c}}<b>{n}<small>{cnt[n]||0} {(cnt[n]||0)===1?'रचना':'रचनाएँ'}</small></b><i>{i}</i></Link>)}</div>
  <p className="center"><Link className="btn" to="/likhein">अपनी रचना प्रकाशित करें</Link></p></main>}
 const PAGE=10;
 function Category(){const{name}=useParams();const[list,setL]=useState([]),[q,setQ]=useState(''),[n,setN]=useState(PAGE),[more,setMore]=useState(false);
