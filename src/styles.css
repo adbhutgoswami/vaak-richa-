@@ -13,3 +13,12 @@ main>.row{display:flex;gap:10px;margin:10px 0}.row{display:flex;gap:10px;flex-wr
 .feat{display:block;border-left:6px solid var(--gold)}.feat span{font-weight:800;color:#8a5a00}.item{display:block}.item h3{margin:0}.cm{border-top:1px solid #c9a95a;padding:8px 0}.hp{position:absolute;left:-9999px}
 .share{margin:14px 0}footer{text-align:center;padding:24px;opacity:.8}:focus-visible{outline:3px solid #fff}
    .card b small{display:block;font:600 14px 'Noto Sans Devanagari',sans-serif;opacity:.9;margin-top:4px}   .auth{display:flex;gap:10px;align-items:center}.who{font-size:14px;opacity:.9;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top{flex-wrap:wrap;gap:8px}
+.t1{font-family:'Rozha One','Tiro Devanagari Hindi',serif;font-weight:400;letter-spacing:.5px}
+.card b{font-family:'Rozha One','Noto Sans Devanagari',serif;font-weight:400}
+main>h2{font-family:'Rozha One','Tiro Devanagari Hindi',serif;font-weight:400;font-size:clamp(28px,5vw,40px);color:#fff2cc;text-shadow:0 2px 4px #0006}
+.read h2{font-family:'Rozha One','Tiro Devanagari Hindi',serif;font-weight:400;font-size:clamp(28px,5vw,44px);line-height:1.4;color:#5a1020;margin:0 0 8px;padding-bottom:10px;border-bottom:2px solid var(--gold)}
+.read small{font-family:'Noto Sans Devanagari',sans-serif;color:#7a5a1a;font-size:15px}
+.read .body{font-family:'Sahitya','Tiro Devanagari Hindi',serif;font-size:clamp(19px,2.4vw,22px);line-height:2.1;color:#2a2118;max-width:68ch;margin-top:18px}
+.read .bio{font-family:'Noto Sans Devanagari',sans-serif;font-size:16px;border-left:4px solid var(--gold);padding-left:12px;color:#5a4a2a}
+.item h3,.feat h2{font-family:'Rozha One','Tiro Devanagari Hindi',serif;font-weight:400;color:#4a0e17}
+.box h2,.box h3,main h3{font-family:'Rozha One','Tiro Devanagari Hindi',serif;font-weight:400}
