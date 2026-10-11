@@ -64,7 +64,7 @@ function Post({user,ed}){const{slug}=useParams();const[p,setP]=useState(),[cm,se
  {user?<div className="row share"><button onClick={like}>{lk.me?'♥':'♡'} पसंद ({lk.n})</button>
  <a className="btn" target="_blank" rel="noreferrer"   href={'https://www.facebook.com/dialog/share?app_id=922080074107414&display=page&href='+encodeURIComponent(url)+'&redirect_uri='+encodeURIComponent(location.origin+'/')}>Facebook पर साझा करें</a>
  <a className="btn" target="_blank" rel="noreferrer" href={'https://twitter.com/intent/tweet?text='+encodeURIComponent(txt)+'&url='+encodeURIComponent(url)}>X पर साझा करें</a>
- <a className="btn" target="_blank" rel="noreferrer" href={'https://wa.me/?text='+encodeURIComponent(txt+' '+url)}>WhatsApp पर साझा करें</a>
+ <a className="btn" target="_blank" rel="noreferrer"    href={'https://wa.me/?text='+encodeURIComponent(url+'\n\n'+txt)}>WhatsApp पर साझा करें</a>
  <button className="alt" onClick={async()=>{await navigator.clipboard.writeText(url);setCo(true)}}>{copied?'लिंक कॉपी हो गया':'लिंक कॉपी करें'}</button><button className="alt" onClick={share}>अन्य विकल्प</button></div>
 :<div className="row share"><button onClick={like}>♡ पसंद ({lk.n})</button><p className="note">साझा करने की सुविधा केवल सदस्यों के लिए है। <Link to="/login" style={{textDecoration:'underline'}}>प्रवेश करें या खाता बनाएँ</Link></p></div>}
   <section className="box"><h3>टिप्पणियाँ ({cm.length})</h3>{cm.map(c=><div key={c.id} className="cm"><b>{c.name}</b> <small>{fmt(c.created_at)}</small><p>{c.body}</p>{ed&&<button className="alt" onClick={async()=>{if(confirm('यह टिप्पणी हटाएँ?')){await sb.from('comments').delete().eq('id',c.id);load()}}}>हटाएँ</button>}</div>)}
