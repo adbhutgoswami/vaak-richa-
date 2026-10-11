@@ -246,14 +246,67 @@ function Post({user,ed}){
     const{error}=await sb.from('comments').insert({post_id:p.id,name:nm,body:tx});
     if(!error){setTx('');load();}
   };
+  const wrap=(x,text,maxW,maxLines)=>{
+    const words=text.replace(/\s+/g,' ').trim().split(' ');
+    const lines=[];let cur='',i=0;
+    for(;i<words.length;i++){
+      const t=cur?cur+' '+words[i]:words[i];
+      if(x.measureText(t).width>maxW&&cur){
+        lines.push(cur);cur=words[i];
+        if(lines.length===maxLines){cur='';break;}
+      } else cur=t;
+    }
+    if(cur&&lines.length<maxLines)lines.push(cur);
+    const used=lines.join(' ').split(' ').length;
+    if(used<words.length&&lines.length)lines[lines.length-1]=lines[lines.length-1].replace(/[\s,.;:।]+$/,'')+'…';
+    return lines;
+  };
+  const makeCard=async()=>{
+    await Promise.all([
+      document.fonts.load("60px 'Rozha One'",p.title+'वाक्-ऋचा'),
+      document.fonts.load("600 36px 'Martel'",p.body.slice(0,600)+p.author_name+p.category)
+    ]);
+    const W=1080,H=1080,c=document.createElement('canvas');
+    c.width=W;c.height=H;
+    const x=c.getContext('2d');
+    const g=x.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#10192f');g.addColorStop(1,'#1d2c52');
+    x.fillStyle=g;x.fillRect(0,0,W,H);
+    x.strokeStyle='#d9a93e';x.lineWidth=6;x.strokeRect(24,24,W-48,H-48);
+    x.lineWidth=2;x.strokeRect(40,40,W-80,H-80);
+    x.textBaseline='alphabetic';x.textAlign='center';
+    x.fillStyle='#e8c060';x.font="72px 'Rozha One',serif";
+    x.fillText('वाक्-ऋचा',W/2,130);
+    let y=170,hasImg=false;
+    if(p.image_url){
+      try{
+        const ib=await createImageBitmap(await(await fetch(p.image_url)).blob());
+        const bw=W-160,bh=340,r=Math.max(bw/ib.width,bh/ib.height),sw=bw/r,sh=bh/r;
+        x.drawImage(ib,(ib.width-sw)/2,(ib.height-sh)/2,sw,sh,80,y,bw,bh);
+        y+=bh+30;hasImg=true;
+      }catch(e){}
+    }
+    x.textAlign='left';
+    x.fillStyle='#fff2cc';x.font="60px 'Rozha One',serif";
+    y+=70;
+    wrap(x,p.title,W-160,hasImg?2:3).forEach(l=>{x.fillText(l,80,y);y+=78;});
+    x.fillStyle='#f6ead2';x.font="600 36px 'Martel',serif";
+    y-=20;
+    wrap(x,p.body,W-160,hasImg?2:7).forEach(l=>{y+=56;x.fillText(l,80,y);});
+    x.fillStyle='#d9a93e';x.fillRect(80,935,W-160,2);
+    x.font="600 32px 'Martel',serif";
+    x.fillText(p.author_name+' · '+p.category,80,985);
+    x.fillStyle='#bfae80';x.font="26px 'Noto Sans Devanagari',sans-serif";
+    x.fillText(location.host,80,1022);
+    return new Promise(res=>c.toBlob(res,'image/png'));
+  };
   const sharePhoto=async()=>{
     try{
-      const src=p.image_url||(location.origin+'/og-default.jpg');
       if(navigator.canShare){
-        const b=await(await fetch(src)).blob();
-        const f=new File([b],'rachna.jpg',{type:b.type||'image/jpeg'});
+        const blob=await makeCard();
+        const f=new File([blob],'rachna.png',{type:'image/png'});
         if(navigator.canShare({files:[f]})){
-          await navigator.share({files:[f],title:p.title,text:txt+'\n\n'+url});
+          await navigator.share({files:[f],title:p.title,text:url+'\n\n'+txt});
           return;
         }
       }
@@ -287,7 +340,7 @@ function Post({user,ed}){
           <a className="btn" target="_blank" rel="noreferrer" href={'https://twitter.com/intent/tweet?text='+encodeURIComponent(txt)+'&url='+encodeURIComponent(url)}>X पर साझा करें</a>
           <a className="btn" target="_blank" rel="noreferrer" href={'https://wa.me/?text='+encodeURIComponent(url+'\n\n'+txt)}>WhatsApp पर साझा करें</a>
           <button className="alt" onClick={async()=>{await navigator.clipboard.writeText(url);setCo(true);}}>{copied?'लिंक कॉपी हो गया':'लिंक कॉपी करें'}</button>
-          <button className="alt" onClick={sharePhoto}>फोटो सहित साझा करें</button>
+          <button className="alt" onClick={sharePhoto}>पोस्ट का चित्र साझा करें</button>
         </div>
       ):(
         <div className="row share">
