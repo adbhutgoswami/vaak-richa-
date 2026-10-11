@@ -321,6 +321,22 @@ function Post({user,ed}){
     setCo(true);
   };
 
+  const shareWA=async()=>{
+    const msg=url+'\n\n'+txt;
+    try{
+      if(navigator.canShare){
+        const b=await(await fetch('/og-default.jpg')).blob();
+        const f=new File([b],'vaak-richa.jpg',{type:'image/jpeg'});
+        if(navigator.canShare({files:[f]})){
+          await navigator.share({files:[f],title:p.title,text:msg});
+          return;
+        }
+      }
+    }catch(e){
+      if(e.name==='AbortError')return;
+    }
+    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener');
+  };
   return(
     <main>
       <Head title={p.title} desc={p.body.slice(0,150)} img={p.image_url}/>
@@ -338,7 +354,7 @@ function Post({user,ed}){
           <button onClick={like}>{lk.me?'♥':'♡'} पसंद ({lk.n})</button>
           <a className="btn" target="_blank" rel="noreferrer" href={'https://www.facebook.com/dialog/share?app_id='+FB_APP_ID+'&display=page&href='+encodeURIComponent(url)+'&redirect_uri='+encodeURIComponent(location.origin+'/')}>Facebook पर साझा करें</a>
           <a className="btn" target="_blank" rel="noreferrer" href={'https://twitter.com/intent/tweet?text='+encodeURIComponent(txt)+'&url='+encodeURIComponent(url)}>X पर साझा करें</a>
-          <a className="btn" target="_blank" rel="noreferrer" href={'https://wa.me/?text='+encodeURIComponent(url+'\n\n'+txt)}>WhatsApp पर साझा करें</a>
+          <button className="btn" onClick={shareWA}>WhatsApp पर साझा करें</button>
           <button className="alt" onClick={async()=>{await navigator.clipboard.writeText(url);setCo(true);}}>{copied?'लिंक कॉपी हो गया':'लिंक कॉपी करें'}</button>
           <button className="alt" onClick={sharePhoto}>पोस्ट का चित्र साझा करें</button>
         </div>
