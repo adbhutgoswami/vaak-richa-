@@ -62,7 +62,7 @@ function Post({user,ed}){const{slug}=useParams();const[p,setP]=useState(),[cm,se
  return<main><Head title={p.title} desc={p.body.slice(0,150)} img={p.image_url}/><article className="read"><h2>{p.title}</h2><small>{p.author_name} · {p.category} · {fmt(p.created_at)}{p.updated_at!==p.created_at&&' (संपादित: '+fmt(p.updated_at)+')'}</small>
  {p.image_url&&<img className="pic" src={p.image_url} alt=""/>}<p className="body">{p.body}</p>{p.bio&&<p className="bio">लेखक परिचय: {p.bio}</p>}{own&&<Link className="btn" to={'/sampadit/'+p.slug}>संपादित करें</Link>}</article>
  {user?<div className="row share"><button onClick={like}>{lk.me?'♥':'♡'} पसंद ({lk.n})</button>
- <a className="btn" target="_blank" rel="noreferrer" href={'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)+'&quote='+encodeURIComponent(txt)}>Facebook पर साझा करें</a>
+ <a className="btn" target="_blank" rel="noreferrer" href={'https://www.facebook.com/sharer/ sharer.php?u='+encodeURIComponent(url)}>Facebook पर साझा करें</a>
  <a className="btn" target="_blank" rel="noreferrer" href={'https://twitter.com/intent/tweet?text='+encodeURIComponent(txt)+'&url='+encodeURIComponent(url)}>X पर साझा करें</a>
  <a className="btn" target="_blank" rel="noreferrer" href={'https://wa.me/?text='+encodeURIComponent(txt+' '+url)}>WhatsApp पर साझा करें</a>
  <button className="alt" onClick={async()=>{await navigator.clipboard.writeText(url);setCo(true)}}>{copied?'लिंक कॉपी हो गया':'लिंक कॉपी करें'}</button><button className="alt" onClick={share}>अन्य विकल्प</button></div>
