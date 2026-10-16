@@ -180,6 +180,7 @@ function Editor({user,ed,post}){
       const slug=mkSlug(t);
       const{error}=await sb.from('posts').insert({...v,slug,author_id:user.id});
       if(error)return setM(error.message);
+      await syncSeen('post');
       nav('/post/'+slug);
     }
   };
@@ -244,7 +245,7 @@ function Post({user,ed}){
     if(hp)return;
     if(!nm.trim()||!tx.trim())return;
     const{error}=await sb.from('comments').insert({post_id:p.id,name:nm,body:tx});
-    if(!error){setTx('');load();}
+    if(!error){setTx('');await syncSeen('comment');load();}
   };
   const wrap=(x,text,maxW,maxLines)=>{
     const words=text.replace(/\s+/g,' ').trim().split(' ');
@@ -467,10 +468,75 @@ function Members(){
   );
 }
 
+/* ---------- नई रचना / नई टिप्पणी की सूचना ---------- */
+const SEEN_KEY={post:'vr_seen_post',comment:'vr_seen_comment'};
+const getSeen=k=>{try{return localStorage.getItem(SEEN_KEY[k]);}catch{return null;}};
+const setSeen=(k,v)=>{try{localStorage.setItem(SEEN_KEY[k],v);}catch{}};
+const ts=d=>Date.parse(d);
+
+async function latestPost(){
+  const{data}=await sb.from('posts').select('slug,title,created_at').eq('published',true).order('created_at',{ascending:false}).limit(1);
+  return data?.[0]||null;
+}
+async function latestComment(){
+  const{data}=await sb.from('comments').select('post_id,name,created_at').order('created_at',{ascending:false}).limit(1);
+  return data?.[0]||null;
+}
+// अपनी ही रचना/टिप्पणी की सूचना खुद को न दिखे, इसलिए प्रकाशित करने के बाद "देखा" मान लेते हैं
+async function syncSeen(kind){
+  try{
+    const x=kind==='post'?await latestPost():await latestComment();
+    if(x)setSeen(kind,x.created_at);
+  }catch(e){}
+}
+
+function NewActivityNotice(){
+  const[n,setN]=useState(null);
+  useEffect(()=>{
+    let alive=true;
+    const check=async()=>{
+      if(document.hidden)return;
+      try{
+        const[p,c]=await Promise.all([latestPost(),latestComment()]);
+        if(!alive)return;
+        // पहली बार आने वाले पाठक को सूचना नहीं दिखती, बस आज तक की स्थिति याद कर ली जाती है
+        if(p&&!getSeen('post'))setSeen('post',p.created_at);
+        if(c&&!getSeen('comment'))setSeen('comment',c.created_at);
+        const sp=getSeen('post'),sc=getSeen('comment');
+        if(p&&sp&&ts(p.created_at)>ts(sp)){
+          setN({kind:'post',at:p.created_at,to:'/post/'+p.slug,title:p.title});
+          return;
+        }
+        if(c&&sc&&ts(c.created_at)>ts(sc)){
+          const{data}=await sb.from('posts').select('slug,title').eq('id',c.post_id).maybeSingle();
+          if(!alive)return;
+          setN({kind:'comment',at:c.created_at,to:data?'/post/'+data.slug:'/',title:data?.title||''});
+        }
+      }catch(e){}
+    };
+    check();
+    const id=setInterval(check,60000);
+    document.addEventListener('visibilitychange',check);
+    return()=>{alive=false;clearInterval(id);document.removeEventListener('visibilitychange',check);};
+  },[]);
+  if(!n)return null;
+  const done=()=>{setSeen(n.kind,n.at);setN(null);};
+  const t=n.title.length>40?n.title.slice(0,40)+'…':n.title;
+  return(
+    <div role="status" style={{position:'fixed',left:'50%',bottom:16,transform:'translateX(-50%)',zIndex:1000,maxWidth:'92vw',display:'flex',gap:12,alignItems:'center',background:'#1d2c52',color:'#fff2cc',border:'1px solid #d9a93e',borderRadius:24,padding:'10px 16px',boxShadow:'0 4px 16px rgba(0,0,0,.35)'}}>
+      <Link to={n.to} onClick={done} style={{color:'inherit'}}>
+        {n.kind==='post'?'🔔 नई रचना आई है':'💬 नई टिप्पणी आई है'}{t&&': '+t}
+      </Link>
+      <button className="alt" aria-label="बंद करें" onClick={done}>✕</button>
+    </div>
+  );
+}
+
 export default function App(){
   const[user,ed]=useUser();
   return(
     <Layout user={user} ed={ed}>
+      <NewActivityNotice/>
       <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/shreni/:name" element={<Category/>}/>
