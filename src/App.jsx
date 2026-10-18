@@ -98,7 +98,87 @@ function Layout({user,ed,children}){
   );
 }
 
-function Home(){
+/* ---------- संपादक का संदेश / सुझाव आमंत्रण ---------- */
+function EditorNote({user,ed}){
+  const[note,setNote]=useState(null),[edit,setEdit]=useState(false);
+  const[tp,setTp]=useState(''),[tx,setTx]=useState(''),[on,setOn]=useState(false),[msg,setMsg]=useState('');
+  const[sg,setSg]=useState(''),[nm,setNm]=useState(''),[sent,setSent]=useState(false),[list,setList]=useState([]);
+  const load=useCallback(async()=>{
+    const{data}=await sb.from('site_notes').select('*').eq('id','suzav').maybeSingle();
+    setNote(data||null);
+    if(data){setTp(data.topic||'');setTx(data.text||'');setOn(!!data.active);}
+  },[]);
+  const loadList=useCallback(async()=>{
+    if(!ed)return;
+    const{data}=await sb.from('suggestions').select('*').order('created_at',{ascending:false}).limit(100);
+    setList(data||[]);
+  },[ed]);
+  useEffect(()=>{load();},[load]);
+  useEffect(()=>{loadList();},[loadList]);
+  useEffect(()=>{setSent(false);},[note?.topic,note?.updated_at]);
+
+  const save=async()=>{
+    const{error}=await sb.from('site_notes').upsert({id:'suzav',topic:tp.trim()||null,text:tx.trim(),active:on,updated_at:new Date().toISOString()});
+    if(error)return setMsg(error.message);
+    setMsg('सुरक्षित हो गया।');setEdit(false);load();
+  };
+  const send=async()=>{
+    if(!sg.trim())return;
+    const name=nm.trim()||(user.email||'').split('@')[0];
+    const{error}=await sb.from('suggestions').insert({topic:note?.topic||null,name,body:sg.trim()});
+    if(error)return setMsg(error.message);
+    setSg('');setSent(true);setMsg('');loadList();
+  };
+
+  const show=note?.active&&(note.topic||note.text);
+  if(!show&&!ed)return null;
+  return(
+    <section className="box">
+      {show?(
+        <>
+          {note.topic&&<h3>{note.topic}</h3>}
+          {note.text&&<p className="body">{note.text}</p>}
+          {user?(
+            sent?<p className="note">आपका सुझाव संपादक तक पहुँच गया। धन्यवाद!</p>:(
+              <>
+                <input placeholder="आपका नाम (वैकल्पिक)" maxLength="60" value={nm} onChange={e=>setNm(e.target.value)}/>
+                <textarea rows="3" maxLength="1000" placeholder="अपना सुझाव यहाँ लिखें" value={sg} onChange={e=>setSg(e.target.value)}/>
+                <button onClick={send}>सुझाव भेजें</button>
+              </>
+            )
+          ):<p className="note">सुझाव देने के लिए <Link to="/login" style={{textDecoration:'underline'}}>प्रवेश करें या खाता बनाएँ</Link></p>}
+        </>
+      ):<p className="note">सदस्यों को अभी कोई संदेश नहीं दिख रहा।</p>}
+      {ed&&(
+        <>
+          {!edit&&<div className="row"><button className="alt" onClick={()=>setEdit(true)}>संपादक: संदेश बदलें</button></div>}
+          {edit&&(
+            <div className="box">
+              <input placeholder="विषय (जैसे: अगले अंक के लिए कौन सा विषय हो?)" maxLength="120" value={tp} onChange={e=>setTp(e.target.value)}/>
+              <textarea rows="3" maxLength="600" placeholder="सदस्यों के लिए संदेश" value={tx} onChange={e=>setTx(e.target.value)}/>
+              <label><input type="checkbox" checked={on} onChange={e=>setOn(e.target.checked)}/> सदस्यों को दिखाएँ</label>
+              <div className="row">
+                <button onClick={save}>सुरक्षित करें</button>
+                <button className="alt" onClick={()=>setEdit(false)}>रद्द करें</button>
+              </div>
+            </div>
+          )}
+          <p className="note">{msg}</p>
+          <h4>आए हुए सुझाव ({list.length})</h4>
+          {list.map(x=>(
+            <div key={x.id} className="cm">
+              <b>{x.name}</b> <small>{fmt(x.created_at)}{x.topic?' · '+x.topic:''}</small>
+              <p>{x.body}</p>
+              <button className="alt" onClick={async()=>{if(confirm('यह सुझाव हटाएँ?')){await sb.from('suggestions').delete().eq('id',x.id);loadList();}}}>हटाएँ</button>
+            </div>
+          ))}
+        </>
+      )}
+    </section>
+  );
+}
+
+function Home({user,ed}){
   const[f,setF]=useState([]),[cnt,setCnt]=useState({});
   useEffect(()=>{
     sb.from('posts').select('*').eq('featured',true).eq('published',true).order('created_at',{ascending:false}).limit(1).then(({data})=>setF(data||[]));
@@ -120,6 +200,7 @@ function Home(){
         ))}
       </div>
       <p className="center"><Link className="btn" to="/likhein">अपनी रचना प्रकाशित करें</Link></p>
+      <EditorNote user={user} ed={ed}/>
     </main>
   );
 }
@@ -538,7 +619,7 @@ export default function App(){
     <Layout user={user} ed={ed}>
       <NewActivityNotice/>
       <Routes>
-        <Route path="/" element={<Home/>}/>
+        <Route path="/" element={<Home user={user} ed={ed}/>}/>
         <Route path="/shreni/:name" element={<Category/>}/>
         <Route path="/post/:slug" element={<Post user={user} ed={ed}/>}/>
         <Route path="/likhein" element={<Editor user={user} ed={ed}/>}/>
