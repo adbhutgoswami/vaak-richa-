@@ -6,7 +6,7 @@ const sb=createClient(import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_SUP
 const FB_APP_ID='2266978280870421';
 const CATS=[['राजनीति','#1c2a5a','🏛️'],['खेल','#2f5a3a','🏅'],['समाज','#c0644a','👥'],['स्वास्थ्य','#8fb08f','🌿'],['सौन्दर्य','#b8707c','🌸'],['शिक्षा','#e0b040','📚'],['तकनीक','#2b6c78','🌐'],['जीवन शैली','#c25a22','🏡'],['स्थानीय मुद्दे','#b44a30','📣'],['साहित्य','#4a0e17','🪶'],['फैशन','#7a0a28','👗'],['कानून','#3d4a5c','⚖️'],['सामयिक','#2f6f9f','📰'],['मनोरंजन','#9c3f7a','🎬'],['संगीत','#5b4a9a','🎵'],['संपादकीय','#43232b','🖋️']];
 const fmt=d=>new Date(d).toLocaleString('hi-IN',{dateStyle:'long',timeStyle:'short'});
-const mkSlug=t=>(t.trim().replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-|-$/g,'').slice(0,60)||'rachna')+'-'+Math.random().toString(36).slice(2,7);
+const mkSlug=t=>(t.trim().replace(/[^\p{L}\p{M}\p{N}\u200c\u200d]+/gu,'-').replace(/^-|-$/g,'').slice(0,60)||'rachna')+'-'+Math.random().toString(36).slice(2,7);
 
 const useUser=()=>{
   const[u,setU]=useState(null),[ed,setEd]=useState(false);
